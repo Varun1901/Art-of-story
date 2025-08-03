@@ -1,73 +1,94 @@
-# Welcome to your Lovable project
+# 🖼️ AI Story Crafter
 
-## Project info
+Turn your images into captivating, genre-specific stories using the power of AI.
 
-**URL**: https://lovable.dev/projects/40114a96-8426-4920-94fd-05fe39f973ee
+## 🚀 Project Overview
 
-## How can I edit this code?
+**Image-to-Story Forge** is a full-stack AI-powered web app that:
+- Takes an uploaded image.
+- Lets the user choose a genre (Fantasy, Sci-Fi, Romance, Thriller, Comedy).
+- Generates a coherent story based on the image and selected genre.
 
-There are several ways of editing your application.
+## 🧠 Tech Stack
 
-**Use Lovable**
+### Frontend
+- React
+- shadcn/ui for elegant UI components
+- Tailwind CSS for styling
+- Axios for API requests
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/40114a96-8426-4920-94fd-05fe39f973ee) and start prompting.
+### Backend
+- FastAPI (Python)
+- PIL for image processing
+- OpenAI/LLM-based story generation logic
+- MySQL (optional for storing logs/users)
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📦 Features
 
-**Use your preferred IDE**
+- 🖼️ Image Upload
+- 🎭 Genre Selection (Fantasy, Sci-Fi, Romance, Thriller, Comedy)
+- 🧠 AI-based Story Generation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📁 Folder Structure
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```
+image-to-story-forge/
+├── frontend/           # React app
+│   ├── components/     # React components (UploadImage, StoryGenerator, etc.)
+│   ├── App.jsx         # Main component
+│   └── ...
+├── backend/            # FastAPI app
+│   ├── main.py         # FastAPI routes and logic
+│   └── ...
+```
 
-Follow these steps:
+## ⚙️ Setup Instructions
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 1. Clone the Repo
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+git clone https://github.com/Varun1901/Art-of-story.git
+cd Art-of-story
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 2. Setup Frontend
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 3. Setup Backend
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
 
-**Use GitHub Codespaces**
+> ⚠️ Make sure both backend (port 8000) and frontend (port 5173 or 3000) are running simultaneously.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🧪 Example Use
 
-## What technologies are used for this project?
+1. Upload an image.
+2. Select a genre.
+3. Click "Upload and Generate Story".
+4. Enjoy a story tailored from your image!
 
-This project is built with:
+## 🌟 Future Improvements
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- User authentication and saved story history
+- Improved story formatting and tone matching
+- Mobile responsiveness
+- Image enhancement preprocessing
 
-## How can I deploy this project?
+## 🤝 Contributing
 
-Simply open [Lovable](https://lovable.dev/projects/40114a96-8426-4920-94fd-05fe39f973ee) and click on Share -> Publish.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-## Can I connect a custom domain to my Lovable project?
+## 📜 License
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+[MIT](https://choosealicense.com/licenses/mit/)
