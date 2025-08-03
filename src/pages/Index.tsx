@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { ImageUpload } from "@/components/ImageUpload";
 import { GenreSelector } from "@/components/GenreSelector";
@@ -7,15 +7,36 @@ import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Sparkles, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiService } from "@/lib/api";
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedGenre, setSelectedGenre] = useState<string>("");
   const [generatedStory, setGeneratedStory] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isBackendConnected, setIsBackendConnected] = useState<boolean | null>(null);
+  const [uploadedFilename, setUploadedFilename] = useState<string>("");
   const { toast } = useToast();
+
+  // Check backend connection on component mount
+  useEffect(() => {
+    const checkBackend = async () => {
+      const isConnected = await apiService.healthCheck();
+      setIsBackendConnected(isConnected);
+      
+      if (!isConnected) {
+        toast({
+          title: "Backend Connection Failed",
+          description: "Unable to connect to the backend server. Please ensure the backend is running on http://localhost:8000",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    checkBackend();
+  }, [toast]);
 
   const generateStory = async () => {
     if (!selectedImage || !selectedGenre) {
@@ -27,30 +48,58 @@ const Index = () => {
       return;
     }
 
+    if (!isBackendConnected) {
+      toast({
+        title: "Backend Not Connected",
+        description: "Please ensure the backend server is running on http://localhost:8000",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
-    // Simulate AI story generation
-    setTimeout(() => {
-      const sampleStory = `In the mystical realm of ${selectedGenre}, where shadows dance with light and dreams take tangible form, our story begins...
+    try {
+      // Show upload progress
+      toast({
+        title: "Uploading Image...",
+        description: "Please wait while we upload your image.",
+      });
 
-The ancient oak tree stood sentinel at the edge of the enchanted forest, its gnarled branches reaching toward the star-filled sky. Beneath its protective canopy, a young adventurer paused to catch their breath, heart racing from the journey through the moonlit wilderness.
-
-The silver pendant around their neck began to glow with an otherworldly light, responding to the magical energies that pulsed through this sacred place. Legend spoke of such moments – when destiny calls and ordinary souls are chosen for extraordinary purposes.
-
-As the wind whispered secrets through the leaves above, the adventurer felt the weight of an ancient prophecy settling upon their shoulders. The time had come to embrace their true calling and step into a world where magic was as real as the ground beneath their feet.
-
-With renewed determination, they adjusted their pack and continued deeper into the forest, knowing that whatever lay ahead would test not only their courage but the very essence of who they were meant to become.
-
-The journey of a lifetime was just beginning, and with each step forward, the boundary between the mundane and the magical grew ever thinner, until they disappeared entirely into the realm of infinite possibilities.`;
+      // First upload the image
+      const uploadResponse = await apiService.uploadImage(selectedImage);
+      setUploadedFilename(uploadResponse.filename);
       
-      setGeneratedStory(sampleStory);
-      setIsLoading(false);
+      // Show generation progress
+      toast({
+        title: "Generating Story...",
+        description: "AI is crafting your story. This may take 10-30 seconds.",
+      });
+      
+      // Then generate the story with timeout
+      const storyResponse = await Promise.race([
+        apiService.generateStory(uploadResponse.filename, selectedGenre),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Story generation timed out. Please try again.")), 60000)
+        )
+      ]);
+      
+      setGeneratedStory(storyResponse.story);
       
       toast({
         title: "Story Generated!",
         description: "Your magical tale is ready to read.",
       });
-    }, 3000);
+    } catch (error) {
+      console.error('Error generating story:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate story. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const regenerateStory = () => {
@@ -75,6 +124,20 @@ The journey of a lifetime was just beginning, and with each step forward, the bo
                 Upload any image and watch as AI crafts a captivating story based on what it sees. 
                 Choose your favorite genre and let the magic begin.
               </p>
+              
+              {/* Backend Connection Status */}
+              {isBackendConnected !== null && (
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                  isBackendConnected 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full ${
+                    isBackendConnected ? 'bg-green-500' : 'bg-red-500'
+                  }`} />
+                  {isBackendConnected ? 'Backend Connected' : 'Backend Disconnected'}
+                </div>
+              )}
             </div>
 
             {/* Upload and Generation Section */}
@@ -109,6 +172,17 @@ The journey of a lifetime was just beginning, and with each step forward, the bo
                     <Sparkles className="w-5 h-5 mr-2" />
                     {isLoading ? "Generating Story..." : "Generate Story"}
                   </Button>
+                  
+                  {isLoading && (
+                    <div className="mt-4 text-center">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        This may take 10-30 seconds depending on image complexity
+                      </p>
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                        <div className="bg-story-gradient h-2 rounded-full animate-pulse" style={{width: '100%'}}></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
